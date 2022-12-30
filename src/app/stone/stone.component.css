@@ -1,0 +1,14 @@
+.white-stone {
+    height: 49px;
+    width: 49px;
+    background-color: transparent;
+    background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Realistic_go_stone_render_-_white.svg/250px-Realistic_go_stone_render_-_white.svg.png?20211230170229);
+}
+.black-stone {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Realistic_go_stone_render_-_black.svg/250px-Realistic_go_stone_render_-_black.svg.png?20211230170802);
+}

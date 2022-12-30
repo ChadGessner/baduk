@@ -1,1 +1,46 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+    --Dark-Purple: #0C0032;
+    --Blue: #3500D3;
+    --Grey: #282828;
+    --Darker-Blue: #240090;
+    --light-purple: #190061;
+    --White: hsl(0, 0%, 100%);
+}
+* {
+    font-family: 'Press Start 2P';
+    color: var(--White);
+}
+.text-white {
+    color: white;
+}
+.black {
+    background-color: black;
+}
+.flex {
+    display: flex;
+}
+.row {
+    flex-flow: row wrap;
+}
+.col {
+    flex-flow: column wrap;
+}
+.justify-center {
+    justify-content: center;
+}
+.justify-start {
+    justify-content: start;
+}
+.align-center {
+    align-items: center;
+}
+.align-start {
+    align-items: flex-start;
+}
+.width-100 {
+    width:100%;
+}
+.m-10 {
+    margin:10px;
+}

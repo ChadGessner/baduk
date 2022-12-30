@@ -1,0 +1,60 @@
+
+<div class="flex col justify-center align-center">
+    <div class="flex col justify-center align-center">
+        <h1 class="text-white">Board</h1>
+        <hr class="width-100">
+    </div>
+</div>
+<div class="flex row justify-center align-center">
+    <div class="flex row width-100 cords-h  justify-center">
+        <p >1</p>
+        <p class="cord-h">2</p>
+        <p class="cord-h">3</p>
+        <p class="cord-h">4</p>
+        <p class="cord-h">5</p>
+        <p class="cord-h">6</p>
+        <p class="cord-h">7</p>
+        <p class="cord-h">8</p>
+        <p class="cord-h">9</p>
+    </div>
+    <div class="flex row">
+        <div class="flex col  cords-v">
+            <p >1</p>
+            <p class="cord">2</p>
+            <p class="cord">3</p>
+            <p class="cord">4</p>
+            <p class="cord">5</p>
+            <p class="cord-v">6</p>
+            <p class="cord">7</p>
+            <p class="cord">8</p>
+            <p class="cord">9</p>
+        </div>
+        <div class="board-image flex row" >
+                <div class="intersection" 
+                *ngFor="let s of intersections" 
+                (click)="onClick(s)">
+                <app-stone 
+                [stoneModel]="service.getStoneByIntersection(s)"
+                [isClicked]="s.isClicked"
+                *ngIf="s.isClicked"></app-stone>
+            </div>
+        </div>
+    </div>
+
+</div>
+    
+        
+    
+    
+    
+        <div class="flex justify-start align-start">
+            
+            
+            
+            
+            
+            
+        </div>
+        
+    
+    
