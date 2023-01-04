@@ -1,4 +1,9 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { 
+  Component,
+   EventEmitter,
+    OnInit,
+     Output 
+    } from '@angular/core';
 import { GameService } from '../services/game.service';
 import { Intersection } from '../shared/intersection.model';
 

@@ -18,6 +18,47 @@ export class GameService {
             s.x === i.x
             )[0];
     }
+    getIntersectionByStone = (stone:Stone):Intersection => {
+        return this.intersections
+        .filter(i => i.move === stone.move)[0];
+    }
+    getGroupCaptureStatus = (group:Stone[]):boolean => {
+        // let dummyGroups = this.groups.slice();
+        // dummyGroups.push(group);
+        
+        // console.log('dummy groups')
+        // console.log(dummyGroups)
+        const opposingColorGroupIndexes = this.getOpposingColorGroupIndexes(group);
+        const opposingColorGroupLibertyStatuses = opposingColorGroupIndexes
+        .map(g => this.getGroupLibertyStatus(this.groups[g]));
+        if(opposingColorGroupLibertyStatuses.some(s => s === 0)){
+            const groupsToRemove:number[] = opposingColorGroupIndexes
+            .filter(
+                (g,i)=> 
+                opposingColorGroupLibertyStatuses[i] === 0 
+                );
+                groupsToRemove.forEach(x => {
+                    console.log('this.groups[x]')
+                    console.log(this.groups[x])
+                    this.removeCapturesByGroup(this.groups[x]);
+                })
+                console.log(true)
+                return true;
+            // then update liberty statuses...
+        }else{
+            return false;
+        }
+    }
+    removeCapturesByGroup = (group:Stone[]):void => {
+        for(let i = 0; i < group.length; i++){
+            let theStone = group[i];
+            let theIntersection = this.getIntersectionByStone(theStone);
+            theIntersection.isClicked = !theIntersection.isClicked;
+            theStone.clacked = !theStone.clacked;
+            theIntersection.color = false;
+            theIntersection.move = -1;
+        }
+    }
     getStonesByColor = (color:boolean):Stone[] => {
         return this.stones
         .filter(s => s.color === color);
@@ -42,13 +83,51 @@ export class GameService {
         .map(s => this.getGroupIndexByStone(s))
         .filter(n => n !== -1);
     }
-    getGroups = (stone:Stone):void => {
+    getOpposingColorGroupIndexes = (group:Stone[]):number[] => {
+        let opposingColorGroupIndexes:number[] = [];
+        for(let i = 0; i < group.length;i++){
+            let currentStone = group[i];
+            let opposingColorRelations = this.getStoneRelationships(currentStone)
+            .filter(s => s.color !== currentStone.color)
+            .map(cs => this.getGroupIndexByStone(cs));
+            opposingColorGroupIndexes = opposingColorGroupIndexes
+            .concat(opposingColorRelations)
+        }
+        let uniqueOpposingColorGroupIndexes:number[] = [];
+        for(let i = 0; i < opposingColorGroupIndexes.length; i++){
+            if(opposingColorGroupIndexes.indexOf(opposingColorGroupIndexes[i]) === i){
+                uniqueOpposingColorGroupIndexes.push(opposingColorGroupIndexes[i]);
+            }
+        }
+        return uniqueOpposingColorGroupIndexes;
+    }
+    getGroupColorRelationship = (stone:Stone):number[] => {
+        const related = this.getStoneRelationships(stone);
+        const colorRelationship = related //asdg
+        .filter(s => s.color === stone.color);
+        let colorRelatedIndexArray = this.getGroupRelationshipIndexesArray(colorRelationship);
+        let uniqueArray:number[] = [];
+        for(let i = 0; i < colorRelatedIndexArray.length; i++){
+            if(colorRelatedIndexArray.indexOf(colorRelatedIndexArray[i]) === i){
+                uniqueArray.push(colorRelatedIndexArray[i])
+            }
+        }
+        return uniqueArray;
+    }
+    getGroupLibertyStatus = (group:Stone[]):number => {
+        return group.reduce(
+            (a,b)=> 
+            b.liberty + a
+            ,0)
+    }
+    getGroups = (stone:Stone):boolean => {
+        const theIntersection = this.getIntersectionByStone(stone);
         if(stone.liberty === 4){
             this.groups.push([
                 stone
             ]);
             
-            return;
+            return true;
         }
         
         const related = this.getStoneRelationships(stone);
@@ -56,28 +135,35 @@ export class GameService {
             this.groups.push([
                 stone
             ]);
-            return;
+            return true;
         }
         for(let i = 0; i < related.length; i++){
             let currentRelatedStone = related[i];
             currentRelatedStone.liberty = this.getLiberties(currentRelatedStone);
         }
-        const colorRelationship = related
-        .filter(s => s.color === stone.color);
-        const colorRelatedIndexArray = this.getGroupRelationshipIndexesArray(colorRelationship);
+        const colorRelatedIndexArray = this.getGroupColorRelationship(stone);
         if(!colorRelatedIndexArray){
-            this.groups.push([stone]);
+            const group = [stone];
+            this.groups.push(group);
+            this.getGroupCaptureStatus(group);
         }
-        if(colorRelatedIndexArray.length === 1){
-            this.groups[
+        if(colorRelatedIndexArray.length === 1){ /// problems probably!!!!! ///
+            const group = this.groups[ 
                 colorRelatedIndexArray[0]
-            ].push(stone);
-            return;
+            ] 
+            group.push(stone);
+            this.getGroupCaptureStatus(group);
+            
+            return true;
         }else{
             let newGroupArray:Stone[] = [stone];
             for(let i = 0; i < colorRelatedIndexArray.length;i++){
                 let currentIndex = colorRelatedIndexArray[i];
                 newGroupArray = newGroupArray.concat(this.groups[currentIndex]);
+            }
+            if(this.getGroupLibertyStatus(newGroupArray) === 0 && !this.getGroupCaptureStatus(newGroupArray)){
+                console.log('that was an illegal move!')
+                return false;
             }
             this.groups = this.groups
             .filter(
@@ -86,6 +172,8 @@ export class GameService {
                 .some(index => index === i)
                 );
             this.groups.push(newGroupArray);
+            this.getGroupCaptureStatus(newGroupArray);
+            return true;
         }
     }
     viewStones = (stone:Stone) => {
@@ -96,16 +184,21 @@ export class GameService {
         // console.log(colorRelationship);
         // const stuff = this.getGroupRelationshipIndexesArray(colorRelationship);
         // console.log(stuff)
-        console.log('current stone relationships')
-        console.log(this.getStoneRelationships(stone));
-        console.log('current Stone Group Indexes');
-        console.log(this.getStoneRelationships(stone).map(s => this.getGroupIndexByStone(s)))
+        console.log('group data')
+        this.groups.forEach(g => {
+            console.log(this.getGroupLibertyStatus(g));
+            console.log(g);
+        })
     }
-    addStone = (stone:Stone):void => {
+    addStone = (stone:Stone):boolean => {
+        
+        if(this.getGroups(stone)){
+            this.viewStones(stone);
+            this.stones.push(stone);
+            return true;
+        }
         this.viewStones(stone);
-        this.getGroups(stone);
-        this.stones.push(stone);
-        console.log(this.groups)
+        return false;
     }
     giveStone =(intersection:Intersection)=> {
         const clacked = intersection.isClicked;
@@ -183,7 +276,7 @@ export class GameService {
     
     getIntersections = ():void => {
         for(let x = 1; x < 10; x++) {
-          for(let y = 1; y < 10; y++){
+          for(let y = 1; y < 10; y++) {
             this.intersections.push(
               new Intersection(
                 false,
